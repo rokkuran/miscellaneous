@@ -73,12 +73,14 @@ class Markov(object):
 
 class Spammer(object):
     """"""
-    def __init__(self, username, channel):
+    def __init__(self, username, channel, output_path=None):
         super(Spammer, self).__init__()
         self.username = username
         self.channel = channel
         print username, channel, '\n', '-' * (len(username + channel) + 1)
 
+        self.output_path = output_path
+
         self._socket = socket.socket()
         self._socket.connect((HOST, PORT))
         self._socket.send("PASS {}\r\n".format(PASS).encode("utf-8"))
@@ -86,8 +88,15 @@ class Spammer(object):
         self._socket.send("JOIN {}\r\n".format(self.channel).encode("utf-8"))
 
     def chat(self, msg):
-        # self._socket.send("PRIVMSG #{} :{}\r\n".format(self.channel, msg))
         self._socket.send("PRIVMSG {} :{}\r\n".format(self.channel, msg))
+
+    def _write_bot_msg(self, msg):
+        args = (self.output_path, self.channel, self.username)
+        filepath = '%s/%s_%s.csv' % args
+        with open(filepath, 'ab') as f:
+            writer = csv.writer(f)
+            t = datetime.strftime(datetime.now(), time_format)
+            writer.writerow([t, NICK, msg])
 
     def spam(self, n_words=100, max_len=6):
         words = []
@@ -99,115 +108,53 @@ class Spammer(object):
                 self._socket.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
             else:
                 username = re.search(r"\w+", response).group(0)
-                message = CHAT_MSG.sub("", response).strip('\r\n')
-                if len(words) < n_words:
-                    words.extend(message.split())
-                    i += 1
-                else:
-                    for word in message.split():
-                        words.pop(0)
-                        words.append(word)
-                    i += 1
+                if 'bot' not in username:
+                    message = CHAT_MSG.sub("", response).strip('\r\n')
+                    if len(words) < n_words:
+                        words.extend(message.split())
+                        i += 1
+                    else:
+                        for word in message.split():
+                            words.pop(0)
+                            words.append(word)
+                        i += 1
 
-                if 'tmi.twitch.tv' not in message:
-                    print '%s: %s' % (username, message)
-                    try:
-                        if (i % 50 == 0) & (len(words) >= n_words):
-                            spammer = Markov(words)
-                            spam_length = np.random.randint(1, max_len)
-                            spam = spammer.generate_markov_text(spam_length)
-                            a = '*' * (len(spam) + 1)
-                            print '\n\n%s\n%s\n%s\n\n' % (a, spam, a)
-                            self.chat(spam)
-                            i = 0
-                    except UnicodeEncodeError as e:
-                        print '\n\n%s\n\n' % e
-                    except UnicodeEncodeError as e:
-                        print '\n\n%s\n\n' % e
-                    except AttributeError as e:
-                        print '\n\n%s\n\n' % e
-                    except KeyError as e:
-                        print '\n\n%s\n\n' % e
+                    if 'tmi.twitch.tv' not in message:
+                        print '%s: %s' % (username, message)
+                        try:
+                            # if (i % 50 == 0) & (len(words) >= n_words):
+                            # if (i % 50 == 0) & (len(words) >= 200):
+                            if (i % 50 == 0):
+                                spammer = Markov(words)
+                                spam_length = np.random.randint(1, max_len)
+                                spam = spammer.generate_markov_text(spam_length)
+                                # spam = spammer.generate_markov_text_close(size=spam_length)
+                                a = '*' * (len(spam) + 1)
+                                print '\n\n%s\n%s\n%s\n\n' % (a, spam, a)
+                                # self.chat(spam)
+                                i = 0
 
-            sleep(1 / float(RATE))
+                                if self.output_path is not None:
+                                    self._write_bot_msg(spam)
 
-
-class AdmiralSpammer(object):
-    """"""
-    def __init__(self, username, channel):
-        super(AdmiralSpammer, self).__init__()
-        self.username = username
-        self.channel = channel
-        print username, channel, '\n', '-' * (len(username + channel) + 1)
-
-        self._socket = socket.socket()
-        self._socket.connect((HOST, PORT))
-        self._socket.send("PASS {}\r\n".format(PASS).encode("utf-8"))
-        self._socket.send("NICK {}\r\n".format(self.username).encode("utf-8"))
-        self._socket.send("JOIN {}\r\n".format(self.channel).encode("utf-8"))
-
-    def chat(self, msg):
-        # self._socket.send("PRIVMSG #{} :{}\r\n".format(self.channel, msg))
-        self._socket.send("PRIVMSG {} :{}\r\n".format(self.channel, msg))
-
-    def spam(self, n_words=100, max_len=6):
-        words = []
-        i = 0
-        while True:
-            response = self._socket.recv(1024).decode("utf-8")
-            if response == "PING :tmi.twitch.tv\r\n":
-                # send pong back to prevent timeout
-                self._socket.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
-            else:
-                username = re.search(r"\w+", response).group(0)
-                message = CHAT_MSG.sub("", response).strip('\r\n')
-                if len(words) < n_words:
-                    words.extend(message.split())
-                    i += 1
-                else:
-                    for word in message.split():
-                        words.pop(0)
-                        words.append(word)
-                    i += 1
-
-                if 'tmi.twitch.tv' not in message:
-                    print '%s: %s' % (username, message)
-                    try:
-                        if (i % 50 == 0) & (len(words) >= n_words):
-                            spammer = Markov(words)
-                            spam_length = np.random.randint(1, max_len)
-                            spam = spammer.generate_markov_text_close(size=spam_length)
-                            a = '*' * (len(spam) + 1)
-                            print '\n\n%s\n%s\n%s\n\n' % (a, spam, a)
-                            self.chat(spam)
-                            i = 0
-                    except UnicodeEncodeError as e:
-                        print '\n\n%s\n\n' % e
-                    except UnicodeEncodeError as e:
-                        print '\n\n%s\n\n' % e
-                    except AttributeError as e:
-                        print '\n\n%s\n\n' % e
-                    except KeyError as e:
-                        print '\n\n%s\n\n' % e
+                        except UnicodeEncodeError as e:
+                            print '\n\n%s\n\n' % e
+                        except UnicodeDecodeError as e:
+                            print '\n\n%s\n\n' % e
+                        except AttributeError as e:
+                            print '\n\n%s\n\n' % e
+                        except KeyError as e:
+                            print '\n\n%s\n\n' % e
 
             sleep(1 / float(RATE))
 
 
-def wagamamatv():
-    markov_echo_bot = Spammer(NICK, "#wagamamatv")
-    markov_echo_bot.spam(10000, 30)
+# markov_echo_bot = Spammer(NICK, "#wagamamatv")
+# markov_echo_bot.spam(10000, 30)
 
+# markov_echo_bot = AdmiralSpammer(NICK, "#admiralbulldog")
+# markov_echo_bot.spam(10000, 5)
 
-def admiralbulldog():
-    markov_echo_bot = AdmiralSpammer(NICK, "#admiralbulldog")
-    markov_echo_bot.spam(10000, 5)
-
-admiralbulldog()
-
-# CHAN = "#wagamamatv"
-# CHAN = "#pyrionflax"
-# CHAN = "#sing_sing"
-# CHAN = '#lirik'
-# CHAN = '#purgegamers'
-# CHAN = '#ppd'
-# CHAN = '#admiralbulldog'
+path = '/home/rokkuran/workspace/miscellaneous/twitch/'
+markov_echo_bot = Spammer(NICK, "#shroud", path)
+markov_echo_bot.spam(15000, 5)
