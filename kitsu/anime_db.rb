@@ -43,6 +43,58 @@ def get_genres(type, id)
 end
 
 
+class LibraryItem
+  def initialize(id, title, rating, type)
+    @id = id
+    @title = title
+    @rating = rating
+    @type = type
+  end
+end
+
+
+class User
+  def initialize(id)
+    @id = id
+    @url_user = "#{$api}/users/#{@id}"
+    @url_library = "#{@url_user}/relationships/library-entries"
+  end
+
+  def details()
+    puts "user_id: #{@id}\nurl_user: #{@url_user}\nurl_library: #{@url_library}"
+  end
+
+  def get_library()
+    return get_data(@url_library)
+  end
+
+  def get_library_entries(id, type='anime')
+    return get_data("#{$api}/library-entries/#{id}")
+  end
+
+  def get_library_entry(id, type='anime')
+    return get_data("#{$api}/library-entries/#{id}/#{type}")
+  end
+
+  def get_library_entries()
+    lib = get_library()
+    entries = []
+    lib.each do |id|
+      puts id
+      # data = get_library_entry(id, 'anime')['data']
+      # data_anime = get
+      #
+      # item = LibraryItem.new(data['id'], data['attributes']['rating'])
+      # names << entry['id']
+    end
+  end
+end
+
+def get_library_entry_anime(id)
+  return get_data("#{$api}/library-entries/#{id}/relationships/anime")
+end
+
+
 def field_key_replace(doc, fields, s, r)
   fields.each do |field|
     encoded = {}
@@ -149,15 +201,25 @@ def query_db_params(collection, query)
 end
 
 # query = {'id' => {'$gt': 49}}
-# query = {'id' => 1}
+# query = {'id' => 1000}
 # query = {'slug' => 'cowboy-bebop'}
-query = {'averageRating' => {'$gt' => 4.2}}
+# query = {'averageRating' => {'$gt' => 4.2}}
 # query = {
 #   'averageRating' => {'$gt' => 4.2},
 #   'genres' => {'$in' => [4]},
 #   'genres' => {'$in' => [20]}
 # }
-query_db_params('anime', query)
+# query_db_params('anime', query)
+# user_lib = get_library_entries(1000)
+# print user_lib
+
+# user = User.new(52345)
+user = User.new(52348)
+user.details
+user.get_library_entries
+# lib = user.get_library
+# puts lib
+
 
 # puts get_doc('anime', 165)
 # puts get_genres('anime', 1)
@@ -166,8 +228,10 @@ query_db_params('anime', query)
 # docs = get_media('anime', 53, 150)
 # docs = get_media('anime', 151, 151)
 # docs = get_media('anime', 152, 250)
-# docs = get_media('anime', 501, 1000)
 # docs = get_media('anime', 251, 500)
+# docs = get_media('anime', 501, 1000)
+# docs = get_media('anime', 1001, 2000)
+
 # update_db(docs, 'anime')
 # query_db('anime')
 # delete_all_records('anime')
