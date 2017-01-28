@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from collections import Counter
 
 import seaborn as sns
 
@@ -22,22 +23,64 @@ if __name__ == '__main__':
     train = np.zeros((n_users, n_anime))
 
     cursor = db.users.find()
+    anime = {}
+    users = {}
+    usernames = {}
     for i, item in enumerate(cursor):
-        for anime in item['library']:
-            anime_id, rating = anime['anime_id'], anime['rating']
+        users[i] = item['user_id']
+        usernames[item['name']] = i
+        # print i, item['name']
+        for entry in item['library']:
+            anime_id, rating = entry['anime_id'], entry['rating']
             j = anime_id_distinct.index(anime_id)
+            if j not in anime:
+                anime[j] = entry['title']
             train[i, j] = rating
 
-    print train.shape
+    print 'matrix size: %s\n' % str(train.shape)
 
     user_similarity = pairwise_distances(train, metric='cosine')
-
-    n = 0
-    q = np.argsort(user_similarity[n])
-    q = q[[x for x in xrange(len(q)) if x != n]]
-    print q[:5]
-
     item_similarity = pairwise_distances(train.T, metric='cosine')
+
+    # n = 0
+    # q = np.argsort(user_similarity[n])[1:]
+    # a, b = train[n], train[q[0]]
+    # r = [i for i, (x, y) in enumerate(zip(a, b)) if (x == 0) & (y == 5)]
+
+    def recommendations(train, similarity_matrix, index, n_recs, n_users,
+                        min_rating):
+        q = similar_users(similarity_matrix[index], n_users)
+        a = train[index]
+
+        items = []
+        for b in train[q]:
+            g = enumerate(zip(a, b))
+            r = [i for i, (x, y) in g if (x == 0) & (y >= min_rating)]
+            items.extend(r)
+
+        # TODO: weight results by rating and count
+        rf = Counter(items).most_common(n_recs)
+        return rf
+
+    def similar_users(similarity_vector, n):
+        # exclude first result, which will always be the original user vector
+        return np.argsort(similarity_vector)[1:n + 1]
+
+    # user_id = 4016
+    # user_id = 0
+    # user_index = [k for k, v in users.items() if v == user_id][0]
+    # name = 'vikhyat'
+    # name = 'Josh'
+    name = 'muon'
+    user_index = usernames[name]
+    print 'recommendations: %s | user_index=%s' % (name, user_index)
+    rf = recommendations(train=train, similarity_matrix=user_similarity,
+                         index=user_index, n_recs=5, n_users=5, min_rating=2.5)
+    # print rf
+
+    for i, (anime_index, count) in enumerate(rf, start=1):
+        title = anime[anime_index].encode('utf-8')
+        print '%s: count=%s; %s' % (i, count, title)
 
     # df = pd.DataFrame(user_similarity)
     # def plot_dist(data, i, j, kind='scatter'):
