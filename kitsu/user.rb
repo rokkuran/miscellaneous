@@ -1,6 +1,7 @@
 require 'oauth'
 require 'json'
 require 'mongo'
+require 'addressable/uri'
 
 
 # kitsu.io api authentication details
@@ -26,44 +27,26 @@ def get_data(url)
 end
 
 
-def get_doc(type, id)
-  return get_data("#{$api}#{type}/#{id}")
-end
-
-
-class LibraryItem
-  def initialize(id, title, rating, type)
-    @id = id
-    @title = title
-    @rating = rating
-    @type = type
-  end
-end
-
-
 class User
   def initialize(id)
     @id = id
-    # @url_user = "#{$api}/users/#{@id}"
-
-    # @url_library = "#{@url_user}/relationships/library-entries"
-    # @url_library = "#{@url_library}?filter[media_type]=Anime"
-
-    @url_library = "#{$api}/library-entries?filter[user_id]=#{id}&filter[media_type]=Anime&include=media&fields[anime]=id"
-    # @url_library = "#{$api}/library-entries?filter[user_id]=#{id}&filter[media_type]=Anime&fields[anime]=id"
-    # @url_query = "#{$api}/library-entries?filter[user_id]=#{@id}"
-    # @url_query = "#{@url_query}&filter[media_type]=Anime&include=media"
-    # @url_query = "#{@url_query}&fields[anime]=id,canonicalTitle"
-    # 52349&filter[media_type]=Anime&include=media&fields[anime]=id,canonicalTitle
+    @uri_query = [
+      ["filter[user_id]", id],
+      ['filter[media_type]', 'Anime'],
+      ['include', 'media'],
+      ['fields[anime]', 'id'],
+      ['page[limit]', 250]]
+    uri = Addressable::URI.parse("#{$api}/library-entries")
+    uri.query_values = @uri_query
+    @uri_library = uri.to_s
   end
 
-  def details()
-    # puts "user_id: #{@id}\nurl_user: #{@url_user}\nurl_library: #{@url_library}"
-    puts "user_id: #{@id}\nurl_library: #{@url_library}"
+  def details
+    puts "user_id: #{@id}\nuri_library: #{@uri_library}"
   end
 
-  def get_library()
-    return get_data(@url_library)
+  def get_library
+    return get_data(@uri_library)
   end
 
   def get_library_item(id)
@@ -74,67 +57,77 @@ class User
     return get_data("#{$api}/library-entries/#{id}/relationships/#{type}")
   end
 
-  # def get_library_entries()
-  #   puts "\nretreiving library items..."
-  #   lib = get_library()
-  #   entries = {}
-  #   lib.each_with_index do |entry, i|
-  #     # if i < 10
-  #     library_id = entry['id']
-  #     anime = get_media_item(library_id)
-  #     item = get_library_item(library_id)
-  #
-  #     rating = item['attributes']['rating'].to_f
-  #     unless rating.nil? | anime.nil?
-  #       anime_id = anime['id'].to_i
-  #       # entries << [library_id, rating, anime_id]
-  #       entries[anime_id] = rating
-  #       puts "#{i}: library_id=#{library_id}; rating=#{rating} | #{anime_id}"
-  #       # end
-  #     end
-  #   end
-  #   puts "library retrieved."
-  #   return entries
-  # end
-
-  def get_library_entries()
-    puts "\nretreiving library items..."
+  def get_library_entries(verbose=false)
+    if verbose
+      puts "\nretreiving library items..."
+    end
     lib = get_library()
     entries = {}
-    # puts lib
-    # data = lib['data']
     lib.each_with_index do |item, i|
-      # puts item
       anime_id = item['relationships']['media']['data']['id'].to_i
       rating = item['attributes']['rating']
-      # puts "#{anime_id} | #{rating}"
-      # if i < 10
-      # library_id = entry['id']
-      # anime = get_media_item(library_id)
-      # item = get_library_item(library_id)
-
-      # rating = item['attributes']['rating'].to_f
       unless rating.nil?
-        # anime_id = anime['id'].to_i
-        # entries << [library_id, rating, anime_id]
         entries[anime_id] = rating.to_f
-        puts "#{i}: #{anime_id} | rating=#{rating}"
-        # end
+        if verbose
+          puts "#{i}: #{anime_id} | rating=#{rating}"
+        end
       end
     end
-    puts "library retrieved."
+    if verbose
+      puts "library retrieved."
+    end
     return entries
   end
 
 end
 
 
-# user = User.new(52345)  # 6 items all nil ratings
-# user = User.new(52348)  # 160+ items
-user = User.new(52349)  # 2 items
+# # user = User.new(52345)  # 6 items all nil ratings
+# # user = User.new(52348)  # 160+ items
+# # user = User.new(52349)  # 2 items
 # user = User.new(52350)  # 122 items
-# user = User.new(1)  # 222 items
-# user = User.new(2)  # 244 items
-user.details
-lib = user.get_library_entries
-puts lib
+# # user = User.new(1)  # 222 items
+# # user = User.new(2)  # 244 items
+# user.details
+# lib = user.get_library_entries
+# puts lib
+
+
+def update_db(docs, collection)
+  begin
+    puts "\ninserting records in '#{collection}'..."
+    client = Mongo::Client.new($client_host, $client_options)
+    db = client.database
+    collection = client[collection]
+    result = collection.insert_many(docs)
+    puts "records inserted: #{result.inserted_count}"
+  rescue StandardError => err
+    puts('error: ')
+    puts(err)
+  end
+  puts "insertion complete.\n"
+end
+
+
+def query_all(collection)
+  client = Mongo::Client.new($client_host, $client_options)
+  db = client.database
+  collection = client[collection]
+  collection.find.each do |document|
+    puts document
+  end
+end
+
+
+libs = []
+(51..100).each_with_index do |user_id, i|
+  user = User.new(user_id)
+  lib = user.get_library_entries
+  if lib.size > 0
+    puts "#{i}: user_id=#{user_id}; lib_size=#{lib.size}"
+    libs << {user_id => lib}
+  end
+end
+
+update_db(libs, 'users')
+# query_all('users')
