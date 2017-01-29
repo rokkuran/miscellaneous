@@ -28,14 +28,22 @@ end
 
 
 class User
-  def initialize(id, limit=2000)
+  def initialize(id, limit=2000, status='completed')
     @id = id
     @limit = limit
+    @status = {
+      'watching' => 1,
+      'planned' => 2,
+      'completed' => 3,
+      'hold' => 4,
+      'dropped' => 5
+    }
     # https://kitsu.io/api/edge/library-entries?
     # filter[user_id]=52349&include=user,media&fields[user]=name&fields[media]=id,canonicalTitle
     @uri_query = [
       ["filter[user_id]", id],
       ['filter[media_type]', 'Anime'],
+      ['filter[status]', @status[status]],
       # ['include', 'media'],
       ['include', 'user,media'],
       ['fields[user]', 'name'],
@@ -73,32 +81,65 @@ class User
       puts "\nretreiving library items..."
     end
     lib = get_library()
-    entries = []
-    n = lib['meta']['count'] - 1
-    (0..[n, @limit - 1].min).each do |i|
-      if i == 0  # first item in list is user details as per @uri_query order
-        @name = lib['included'][i]['attributes']['name']
-      else
-        anime_id = lib['included'][i]['id'].to_i
-        anime_title = lib['included'][i]['attributes']['canonicalTitle']
-        rating = lib['data'][i]['attributes']['rating']
-        unless rating.nil?
-          record = {
-            :anime_id => anime_id,
-            :rating => rating.to_f,
-            :title => anime_title
-          }
-          entries << record
-          if verbose
-            puts "#{i} anime_id=#{anime_id}; rating=#{rating}; title=#{anime_title}"
-          end
+
+    unless lib['data'].nil? | lib['included'].nil?
+      anime_id_rating = {}
+      lib['data'].each do |item|
+        rating = item['attributes']['rating'].to_f
+        id = item['relationships']['media']['data']['id'].to_i
+        anime_id_rating[id] = rating
+      end
+
+      anime_id_title = {}
+      lib['included'].each do |item|
+        type = item['type']
+        if type == 'users'
+          @name = item['attributes']['name']
+        elsif type == 'anime'
+          id = item['id'].to_i
+          title = item['attributes']['canonicalTitle']
+          anime_id_title[id] = title
         end
       end
+
+      records = []
+      anime_id_title.each_pair do |id, title|
+        record = {
+          'anime_id' => id,
+          'rating' => anime_id_rating[id],
+          'title' => title
+        }
+        records << record
+      end
     end
+
+    # entries = []
+    # n = lib['meta']['count'] - 1
+    # (0..[n, @limit - 1].min).each do |i|
+    #   if i == 0  # first item in list is user details as per @uri_query order
+    #     @name = lib['included'][i]['attributes']['name']
+    #   else
+    #     anime_id = lib['included'][i]['id'].to_i
+    #     anime_title = lib['included'][i]['attributes']['canonicalTitle']
+    #     rating = lib['data'][i]['attributes']['rating']
+    #     unless rating.nil?
+    #       record = {
+    #         :anime_id => anime_id,
+    #         :rating => rating.to_f,
+    #         :title => anime_title
+    #       }
+    #       entries << record
+    #       if verbose
+    #         puts "#{i} anime_id=#{anime_id}; rating=#{rating}; title=#{anime_title}"
+    #       end
+    #     end
+    #   end
+    # end
     if verbose
       puts "library retrieved."
     end
-    return entries
+    # return entries
+    return records
   end
 
 end
@@ -158,7 +199,8 @@ def get_user_libs(x, y)
   (x..y).each_with_index do |user_id, i|
     user = User.new(user_id)
     lib = user.get_library_entries
-    if lib.size > 0
+    # if lib.size > 0
+    unless lib.nil?
       puts "#{i}: user_id=#{user_id}; lib_size=#{lib.size}"
       record = {:user_id => user_id, :name => user.name, :library => lib}
       libs << record
@@ -173,21 +215,54 @@ end
 # user = User.new(52349)  # 2 items
 # user = User.new(52350)  # 122 items
 # # user = User.new(1)  # 222 items
-# # user = User.new(2)  # 244 items
+# # user = User.new(2)  # 244 itBems
 # user = User.new(8)  # 1700+ items
-# user.details
+# user = User.new(4016)
+# # user.details
 # lib = user.get_library
+# puts JSON.pretty_generate(lib)
 # lib = user.get_library_entries(verbose=true)
+# puts JSON.pretty_generate(lib)
 # puts lib
 
 
 # delete_all_records('users')
-# libs = get_user_libs(4000, 4020)
-# libs = get_user_libs(151, 200)
-# update_db(libs, 'users')
+# libs = get_user_libs(11, 200)
+libs = get_user_libs(4000, 4020)
+update_db(libs, 'users')
 # query_all('users')
 #
 # query = {'user_id' => {'$gt': 95}}
 # query = {'library.rating' => {'$gte': 4}}
 # query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
-# query_db_params('users', query)
+
+def print_query(collection, query)
+  client = Mongo::Client.new($client_host, $client_options)
+  db = client.database
+  collection = client[collection]
+  cursor = collection.find(query)
+  s = cursor.to_a
+  puts JSON.pretty_generate(s)
+end
+
+
+class Collection
+  def initialize(name)
+    client = Mongo::Client.new($client_host, $client_options)
+    @collection = client[name]
+  end
+
+  def pretty_print(cursor)
+    puts JSON.pretty_generate(cursor.to_a)
+  end
+
+  def query(query)
+    cursor = @collection.find(query)
+    pretty_print(cursor)
+  end
+end
+
+
+# collection = Collection.new('users')
+# query = {'name' => 'muon'}
+# collection.query(query)
