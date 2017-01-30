@@ -84,35 +84,3 @@ def get_media(type='anime', from=1, to=6)
   end
   return docs
 end
-
-
-# puts get_doc('anime', 165)
-# puts get_genres('anime', 1)
-# docs = get_media('anime', 1, 50)
-# docs = get_media('anime', 51, 52)
-# docs = get_media('anime', 53, 150)
-# docs = get_media('anime', 151, 151)
-# docs = get_media('anime', 152, 250)
-# docs = get_media('anime', 251, 500)
-# docs = get_media('anime', 501, 1000)
-# docs = get_media('anime', 1001, 2000)
-
-
-# update_db(docs, 'anime')
-# query_db('anime')
-
-
-# query = {'id' => {'$gt': 49}}
-# query = {'id' => 1000}
-# query = {'slug' => 'cowboy-bebop'}
-query = {'averageRating' => {'$gt' => 4.4}}
-# query = {
-#   'averageRating' => {'$gt' => 4.2},
-#   'genres' => {'$in' => [4]},
-#   'genres' => {'$in' => [20]}
-# }
-
-anime = Collection.new('anime')
-# query = {}
-puts anime.query(query)
-# anime.count(query)

@@ -120,29 +120,3 @@ def populate_users(id_start, id_end)
   users = Collection.new('users')
   users.insert(libs)
 end
-
-
-# user = User.new(52345)  # 6 items all nil ratings
-# user = User.new(52348)  # 160+ items
-# user = User.new(52349)  # 2 items
-# user = User.new(52350)  # 122 items
-# user = User.new(1)  # 222 items
-# user = User.new(2)  # 244 itBems
-# user = User.new(8)  # 1700+ items
-# user = User.new(4016)  # muon
-# lib = user.get_library
-# puts JSON.pretty_generate(lib)
-
-
-# populate_users(302, 302)
-
-
-# # query = {'name' => 'muon'}
-# # query = {'library.rating' => {'$lte': 0}}
-# # query = {'user_id' => {'$gt': 95}}
-# # query = {'library.rating' => {'$gte': 4}}
-# # query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
-query = {'user_id' => 4016}
-
-users = Collection.new('users')
-users.query(query)
