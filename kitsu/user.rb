@@ -6,25 +6,14 @@ require 'addressable/uri'
 
 # kitsu.io api authentication details
 $api = "https://kitsu.io/api/edge/"
-$consumer = OAuth::Consumer.new(
-  "dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd",
-  "54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151")
+consumer_key = "dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd"
+consumer_secret = "54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151"
+$consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
 
 # mongodb config
 Mongo::Logger.logger.level = Logger::WARN
 $client_host = ['127.0.0.1:27017']
 $client_options = {database: 'kitsu'}
-
-
-def get_base_request(url)
-  return $consumer.request(:get, url)
-end
-
-
-def get_data(url)
-  response = $consumer.request(:get, url)
-  return JSON.parse(response.body)['data']
-end
 
 
 class User
@@ -38,8 +27,6 @@ class User
       'hold' => 4,
       'dropped' => 5
     }
-    # https://kitsu.io/api/edge/library-entries?
-    # filter[user_id]=52349&include=user,media&fields[user]=name&fields[media]=id,canonicalTitle
     @uri_query = [
       ["filter[user_id]", id],
       ['filter[media_type]', 'Anime'],
@@ -61,15 +48,6 @@ class User
   def get_library
     response = $consumer.request(:get, @uri_library)
     return JSON.parse(response.body)
-    # return get_data(@uri_library)
-  end
-
-  def get_library_item(id)
-    return get_data("#{$api}/library-entries/#{id}")
-  end
-
-  def get_media_item(id, type='anime')
-    return get_data("#{$api}/library-entries/#{id}/relationships/#{type}")
   end
 
   def name
@@ -113,32 +91,10 @@ class User
       end
     end
 
-    # entries = []
-    # n = lib['meta']['count'] - 1
-    # (0..[n, @limit - 1].min).each do |i|
-    #   if i == 0  # first item in list is user details as per @uri_query order
-    #     @name = lib['included'][i]['attributes']['name']
-    #   else
-    #     anime_id = lib['included'][i]['id'].to_i
-    #     anime_title = lib['included'][i]['attributes']['canonicalTitle']
-    #     rating = lib['data'][i]['attributes']['rating']
-    #     unless rating.nil?
-    #       record = {
-    #         :anime_id => anime_id,
-    #         :rating => rating.to_f,
-    #         :title => anime_title
-    #       }
-    #       entries << record
-    #       if verbose
-    #         puts "#{i} anime_id=#{anime_id}; rating=#{rating}; title=#{anime_title}"
-    #       end
-    #     end
-    #   end
-    # end
     if verbose
       puts "library retrieved."
     end
-    # return entries
+
     return records
   end
 
@@ -228,8 +184,8 @@ end
 
 # delete_all_records('users')
 # libs = get_user_libs(11, 200)
-libs = get_user_libs(4000, 4020)
-update_db(libs, 'users')
+# libs = get_user_libs(4000, 4020)
+# update_db(libs, 'users')
 # query_all('users')
 #
 # query = {'user_id' => {'$gt': 95}}
@@ -248,6 +204,7 @@ end
 
 class Collection
   def initialize(name)
+    @name = name
     client = Mongo::Client.new($client_host, $client_options)
     @collection = client[name]
   end
@@ -260,9 +217,15 @@ class Collection
     cursor = @collection.find(query)
     pretty_print(cursor)
   end
+
+  def delete_all
+    @collection.delete_many({})
+    puts "all records deleted from '#{@name}' collection."
+  end
 end
 
 
-# collection = Collection.new('users')
+collection = Collection.new('users')
 # query = {'name' => 'muon'}
-# collection.query(query)
+query = {'library.rating' => {'$lte': 0}}
+collection.query(query)
