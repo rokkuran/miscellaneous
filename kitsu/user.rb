@@ -3,6 +3,8 @@ require 'json'
 require 'mongo'
 require 'addressable/uri'
 
+require_relative 'db'
+
 
 # kitsu.io api authentication details
 $api = "https://kitsu.io/api/edge/"
@@ -10,14 +12,9 @@ consumer_key = "dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd
 consumer_secret = "54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151"
 $consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
 
-# mongodb config
-Mongo::Logger.logger.level = Logger::WARN
-$client_host = ['127.0.0.1:27017']
-$client_options = {database: 'kitsu'}
-
 
 class User
-  def initialize(id, limit=2000, status='completed')
+  def initialize(id, limit=2000, status=['completed'])
     @id = id
     @limit = limit
 
@@ -29,11 +26,10 @@ class User
       'dropped' => 5
     }
 
-    # TODO: query multiple status'
     @uri_query = [
       ["filter[user_id]", id],
       ['filter[media_type]', 'Anime'],
-      ['filter[status]', @status[status]],
+      ['filter[status]', status.map { |x| @status[x] }.join(",")],
       ['include', 'user,media'],
       ['fields[user]', 'name'],
       ['fields[anime]', 'id,canonicalTitle'],
@@ -95,7 +91,7 @@ class User
     end
 
     if verbose
-      puts "library retrieved."
+      puts "library retrieved.\n"
     end
 
     return records
@@ -104,43 +100,9 @@ class User
 end
 
 
-class Collection
-  def initialize(name)
-    @name = name
-    client = Mongo::Client.new($client_host, $client_options)
-    @collection = client[name]
-  end
-
-  def pretty_print(cursor)
-    puts JSON.pretty_generate(cursor.to_a)
-  end
-
-  def query(query)
-    cursor = @collection.find(query)
-    pretty_print(cursor)
-  end
-
-  def delete_all
-    @collection.delete_many({})
-    puts "all records deleted from '#{@name}' collection."
-  end
-
-  def insert(docs)
-    begin
-      puts "\ninserting records in '#{@name}'..."
-      result = @collection.insert_many(docs)
-      puts "records inserted: #{result.inserted_count}"
-    rescue StandardError => e
-      puts "error: #{e}"
-    end
-    puts "insertion complete.\n"
-  end
-end
-
-
-def batch_user_libs(x, y)
+def batch_user_libs(id_start, id_end)
   libs = []
-  (x..y).each_with_index do |user_id, i|
+  (id_start..id_end).each_with_index do |user_id, i|
     user = User.new(user_id)
     lib = user.get_library_entries
     unless lib.nil?
@@ -153,29 +115,34 @@ def batch_user_libs(x, y)
 end
 
 
+def populate_users(id_start, id_end)
+  libs = batch_user_libs(id_start, id_end)
+  users = Collection.new('users')
+  users.insert(libs)
+end
+
+
 # user = User.new(52345)  # 6 items all nil ratings
 # user = User.new(52348)  # 160+ items
 # user = User.new(52349)  # 2 items
 # user = User.new(52350)  # 122 items
-# # user = User.new(1)  # 222 items
-# # user = User.new(2)  # 244 itBems
+# user = User.new(1)  # 222 items
+# user = User.new(2)  # 244 itBems
 # user = User.new(8)  # 1700+ items
 # user = User.new(4016)  # muon
-# # user.details
 # lib = user.get_library
 # puts JSON.pretty_generate(lib)
 
-# libs = batch_user_libs(11, 200)
-# libs = batch_user_libs(4000, 4020)
-libs = batch_user_libs(211, 250)
-users = Collection.new('users')
-users.insert(libs)
 
-# users = Collection.new('users')
-# query = {'name' => 'muon'}
-# query = {'library.rating' => {'$lte': 0}}
-# query = {'user_id' => {'$gt': 95}}
-# query = {'library.rating' => {'$gte': 4}}
-# query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
-# query = {'user_id' => 210}
-# users.query(query)
+# populate_users(302, 302)
+
+
+# # query = {'name' => 'muon'}
+# # query = {'library.rating' => {'$lte': 0}}
+# # query = {'user_id' => {'$gt': 95}}
+# # query = {'library.rating' => {'$gte': 4}}
+# # query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
+query = {'user_id' => 4016}
+
+users = Collection.new('users')
+users.query(query)
