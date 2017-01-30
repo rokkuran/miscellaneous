@@ -1,0 +1,11 @@
+*.csv
+*.pyc
+*hdf5
+*.p
+
+/scala
+/scratch
+
+/pso/scratch
+
+/twitch/archive
