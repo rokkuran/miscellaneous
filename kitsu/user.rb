@@ -20,6 +20,7 @@ class User
   def initialize(id, limit=2000, status='completed')
     @id = id
     @limit = limit
+
     @status = {
       'watching' => 1,
       'planned' => 2,
@@ -27,15 +28,17 @@ class User
       'hold' => 4,
       'dropped' => 5
     }
+
+    # TODO: query multiple status'
     @uri_query = [
       ["filter[user_id]", id],
       ['filter[media_type]', 'Anime'],
       ['filter[status]', @status[status]],
-      # ['include', 'media'],
       ['include', 'user,media'],
       ['fields[user]', 'name'],
       ['fields[anime]', 'id,canonicalTitle'],
       ['page[limit]', @limit]]
+
     uri = Addressable::URI.parse("#{$api}/library-entries")
     uri.query_values = @uri_query
     @uri_library = uri.to_s
@@ -101,107 +104,6 @@ class User
 end
 
 
-def update_db(docs, collection)
-  begin
-    puts "\ninserting records in '#{collection}'..."
-    client = Mongo::Client.new($client_host, $client_options)
-    db = client.database
-    collection = client[collection]
-    result = collection.insert_many(docs)
-    puts "records inserted: #{result.inserted_count}"
-  rescue StandardError => err
-    puts('error: ')
-    puts(err)
-  end
-  puts "insertion complete.\n"
-end
-
-
-def query_all(collection)
-  client = Mongo::Client.new($client_host, $client_options)
-  db = client.database
-  puts "\nquerying all documents in collection '#{collection}'."
-  collection = client[collection]
-  collection.find.each do |document|
-    puts document
-  end
-end
-
-
-def query_db_params(collection, query)
-  client = Mongo::Client.new($client_host, $client_options)
-  db = client.database
-  collection = client[collection]
-
-  cursor = collection.find(query)
-  puts 'query results:'
-  cursor.each_with_index do |row, idx|
-    puts "#{idx}: #{row}"
-  end
-end
-
-
-def delete_all_records(collection_name)
-  client = Mongo::Client.new($client_host, $client_options)
-  db = client.database
-  collection = client[collection_name]
-  collection.delete_many({})
-  puts "all records deleted from '#{collection_name}' collection."
-end
-
-
-def get_user_libs(x, y)
-  libs = []
-  (x..y).each_with_index do |user_id, i|
-    user = User.new(user_id)
-    lib = user.get_library_entries
-    # if lib.size > 0
-    unless lib.nil?
-      puts "#{i}: user_id=#{user_id}; lib_size=#{lib.size}"
-      record = {:user_id => user_id, :name => user.name, :library => lib}
-      libs << record
-    end
-  end
-  return libs
-end
-
-
-# user = User.new(52345)  # 6 items all nil ratings
-# user = User.new(52348)  # 160+ items
-# user = User.new(52349)  # 2 items
-# user = User.new(52350)  # 122 items
-# # user = User.new(1)  # 222 items
-# # user = User.new(2)  # 244 itBems
-# user = User.new(8)  # 1700+ items
-# user = User.new(4016)
-# # user.details
-# lib = user.get_library
-# puts JSON.pretty_generate(lib)
-# lib = user.get_library_entries(verbose=true)
-# puts JSON.pretty_generate(lib)
-# puts lib
-
-
-# delete_all_records('users')
-# libs = get_user_libs(11, 200)
-# libs = get_user_libs(4000, 4020)
-# update_db(libs, 'users')
-# query_all('users')
-#
-# query = {'user_id' => {'$gt': 95}}
-# query = {'library.rating' => {'$gte': 4}}
-# query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
-
-def print_query(collection, query)
-  client = Mongo::Client.new($client_host, $client_options)
-  db = client.database
-  collection = client[collection]
-  cursor = collection.find(query)
-  s = cursor.to_a
-  puts JSON.pretty_generate(s)
-end
-
-
 class Collection
   def initialize(name)
     @name = name
@@ -222,10 +124,58 @@ class Collection
     @collection.delete_many({})
     puts "all records deleted from '#{@name}' collection."
   end
+
+  def insert(docs)
+    begin
+      puts "\ninserting records in '#{@name}'..."
+      result = @collection.insert_many(docs)
+      puts "records inserted: #{result.inserted_count}"
+    rescue StandardError => e
+      puts "error: #{e}"
+    end
+    puts "insertion complete.\n"
+  end
 end
 
 
-collection = Collection.new('users')
+def batch_user_libs(x, y)
+  libs = []
+  (x..y).each_with_index do |user_id, i|
+    user = User.new(user_id)
+    lib = user.get_library_entries
+    unless lib.nil?
+      puts "#{i}: user_id=#{user_id}; lib_size=#{lib.size}"
+      record = {:user_id => user_id, :name => user.name, :library => lib}
+      libs << record
+    end
+  end
+  return libs
+end
+
+
+# user = User.new(52345)  # 6 items all nil ratings
+# user = User.new(52348)  # 160+ items
+# user = User.new(52349)  # 2 items
+# user = User.new(52350)  # 122 items
+# # user = User.new(1)  # 222 items
+# # user = User.new(2)  # 244 itBems
+# user = User.new(8)  # 1700+ items
+# user = User.new(4016)  # muon
+# # user.details
+# lib = user.get_library
+# puts JSON.pretty_generate(lib)
+
+# libs = batch_user_libs(11, 200)
+# libs = batch_user_libs(4000, 4020)
+libs = batch_user_libs(211, 250)
+users = Collection.new('users')
+users.insert(libs)
+
+# users = Collection.new('users')
 # query = {'name' => 'muon'}
-query = {'library.rating' => {'$lte': 0}}
-collection.query(query)
+# query = {'library.rating' => {'$lte': 0}}
+# query = {'user_id' => {'$gt': 95}}
+# query = {'library.rating' => {'$gte': 4}}
+# query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
+# query = {'user_id' => 210}
+# users.query(query)
