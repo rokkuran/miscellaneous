@@ -1,5 +1,5 @@
 # Miscellaneous Projects
-A place for smaller coding projects that have no other home.
+A place for smaller projects that have no other home.
 
 
 
@@ -12,8 +12,8 @@ N-dimensional particle swarm optimisation (PSO).
 
 
 
-## Hidden Markov Models
-Hidden Markov model (HMM) for text generation. Incorporates part-of-speech tagging.
+## Markov Models
+Markov model for text generation.
 
 
 
