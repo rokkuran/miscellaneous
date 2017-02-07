@@ -62,7 +62,7 @@ class Bot(object):
         message = mask.sub("", response).strip('\r\n')
         return username, message
 
-    def action(self, msg):
+    def action(self, username, msg):
         return NotImplementedError()
 
     def run(self):
@@ -70,6 +70,6 @@ class Bot(object):
             response = self._get_response()
             if response:
                 username, msg = self._process_msg(response)
-                self.action(msg)
+                self.action(username, msg)
 
             sleep(1 / float(self.n_msg_per_sec))
