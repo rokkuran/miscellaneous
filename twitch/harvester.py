@@ -1,69 +1,42 @@
-import socket
-import re
-import csv
+from bot import Bot
 
-from time import sleep
+import yaml
+import csv
+import sys
+
 from datetime import datetime
 
 
-HOST = "irc.twitch.tv"
-PORT = 6667
-NICK = "eponymouse"
-PASS = "oauth:bqrru03xz1g5l9ehh6w17zwmuyijzg"
+try:
+    CHAN = sys.argv[1]
+except Exception as e:
+    raise e
 
-RATE = 30  # messages per second
-CHAT_MSG = re.compile(r"^:\w+!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :")
-time_format = '%Y-%m-%d %H:%M:%S'
+config = yaml.safe_load(open('config.yml', 'rb'))
+HOST = config['HOST']
+PORT = config['PORT']
+NICK = config['NICK']
+PASS = config['PASS']
 
 
-class Harvester(object):
+class Harvester(Bot):
     """"""
-    def __init__(self, username, channel):
-        super(Harvester, self).__init__()
-        self.username = username
-        self.channel = channel
-        print username, channel, '\n', '-' * (len(username + channel) + 1)
+    def __init__(self, output_path, verbose=True, **kwargs):
+        super(Harvester, self).__init__(**kwargs)
+        self.output_path = output_path
+        self.verbose = verbose
 
-        self._socket = socket.socket()
-        self._socket.connect((HOST, PORT))
-        self._socket.send("PASS {}\r\n".format(PASS).encode("utf-8"))
-        self._socket.send("NICK {}\r\n".format(self.username).encode("utf-8"))
-        self._socket.send("JOIN {}\r\n".format(self.channel).encode("utf-8"))
+    def action(self, username, msg):
+        if self.verbose:
+            print '%s: %s' % (username, msg)
 
-    def collect(self):
-        while True:
-            response = self._socket.recv(1024).decode("utf-8")
-            if response == "PING :tmi.twitch.tv\r\n":
-                # send pong back to prevent timeout
-                self._socket.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
-            else:
-                username = re.search(r"\w+", response).group(0)
-                message = CHAT_MSG.sub("", response).strip('\r\n')
-
-                if 'tmi.twitch.tv' not in message:
-                    print '%s: %s' % (username, message)
-                    try:
-                        with open('{}.csv'.format(self.channel), 'ab') as f:
-                            writer = csv.writer(f)
-                            t = datetime.strftime(datetime.now(), time_format)
-                            writer.writerow([t, username, message])
-                    except UnicodeEncodeError as e:
-                        print '\n\n%s\n\n' % e
-                    except UnicodeEncodeError as e:
-                        print '\n\n%s\n\n' % e
-                    except AttributeError as e:
-                        print '\n\n%s\n\n' % e
-
-            sleep(1 / float(RATE))
+        with open('{}/{}.csv'.format(self.output_path, self.channel), 'ab') as f:
+            writer = csv.writer(f)
+            t = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+            writer.writerow([t, username, msg])
 
 
-CHAN = "#wagamamatv"
-# CHAN = "#pyrionflax"
-# CHAN = "#sing_sing"
-# CHAN = '#lirik'
-# CHAN = '#purgegamers'
-# CHAN = '#ppd'
-# CHAN = '#admiralbulldog'
-
-streamer = Harvester(NICK, CHAN)
-streamer.collect()
+if __name__ == '__main__':
+    path = '/home/rokkuran/workspace/miscellaneous/twitch/output/'
+    harvester = Harvester(username=NICK, channel=CHAN, output_path=path)
+    harvester.run()
