@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Particle(object):
@@ -11,8 +10,8 @@ class Particle(object):
         self.x = x  # position
         self.p = x.copy()  # best known position
         self.v = v  # velocity
-        self.f_x = 0
-        self.f_p = 0
+        self.f_x = 0  # last function value for x
+        self.f_p = 0  # last function value for p
 
 
 def pso(f, swarm_size, bounds, n_iter=10, omega=0.75, phi_p=0.02, phi_g=0.1,
@@ -114,11 +113,12 @@ def rosenbrock(x, y):
 
 
 def matyas(x, y):
-    # minimum at (0, 0)
+    # minimum @ (0, 0)
     return 0.26 * (x**2 + y**2) - 0.48 * x * y
 
 
-def misc(x, y, z, a=1, b=2, c=3):
+def polynomial(x, y, z, a=1, b=2, c=3):
+    # minimum @ (a, b, c)
     return (x - a)**2 + (y - b)**2 + (z - c)**2
 
 
@@ -131,24 +131,24 @@ if __name__ == '__main__':
         bounds = [
             ('x', [-1, 1.5]),
             ('y', [-2, 3])]
-        z = pso(f=rosenbrock, swarm_size=swarm_size, bounds=bounds, n_iter=n_iter,
-                omega=0.75, phi_p=0.02, phi_g=0.1)
+        z = pso(f=rosenbrock, swarm_size=swarm_size, bounds=bounds,
+                n_iter=n_iter, omega=0.75, phi_p=0.02, phi_g=0.1)
 
     def test_matyas():
         bounds = [
             ('x', [-5, 5]),
             ('y', [-5, 5])]
-        z = pso(f=matyas, swarm_size=swarm_size, bounds=bounds, n_iter=n_iter,
-                omega=0.75, phi_p=0.02, phi_g=0.1)
+        z = pso(f=matyas, swarm_size=swarm_size, bounds=bounds,
+                n_iter=n_iter, omega=0.75, phi_p=0.02, phi_g=0.1)
 
     def test_3d():
         bounds = [
             ('x', [-250, 500]),
             ('y', [-500, 50]),
             ('z', [-100, 100])]
-        z = pso(f=misc, swarm_size=swarm_size, bounds=bounds, n_iter=n_iter,
-                omega=0.75, phi_p=0.02, phi_g=0.1)
+        z = pso(f=polynomial, swarm_size=swarm_size, bounds=bounds,
+                n_iter=n_iter, omega=0.75, phi_p=0.02, phi_g=0.1)
 
     test_rosenbrock()
-    # test_matyas()
-    # test_3d()
+    test_matyas()
+    test_3d()
