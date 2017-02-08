@@ -4,36 +4,38 @@ A place for smaller projects that have no other home.
 
 
 ## Paricle Swarm Optimisation
-N-dimensional particle swarm optimisation (PSO).
+- N-dimensional particle swarm optimisation (PSO).
+- Preliminary work to apply to model parameter tuning.
 
-### Further Work
-- Integer based PSO
+#### Further Work
+- Integer based PSO.
 - Refactor into class for easier application to other problems.
 
 
 
-## Markov Models
+## Markov Model
 Markov model for text generation.
 
 
 
 ## Twitch
-- Connect to [Twitch][twitch] IRC channels.
+- Base bot class for connecting to [Twitch][twitch] IRC channels.
 - Channel based chat harvester.
-- HMM based chat bot.
+- Markov model based generative chat bot.
+- Preliminary work for frequency/statistics related collection bot.
 
-### Further Work
-- Improve HMM bot grammatical sense.
-- Mix Shakespeare and twitch chat sources for a refined non-sensical troll.
-- Refactoring
+#### Further Work
+- Improve _markovechobot_ grammatical sense.
+- Incorporate POS tagging into model (resurrect from scratch dir...)
+- Fix regex for rare messages that pass beyond unformatted.
 
 
 
 ## Anime Recommenders
 - Uses [Kitsu][kitsu] API to retrieve user/item data.
 - Data stored locally in mongodb.
-- Content based recommender.
-- Memory based collaborative filtering recommender.
+- Preliminary work on content based recommender.
+- Preliminary work on SVD based collaborative filtering recommender.
 
 
 
