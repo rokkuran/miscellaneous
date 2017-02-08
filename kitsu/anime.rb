@@ -5,10 +5,12 @@ require 'mongo'
 require_relative 'db'
 
 
+# TODO: refactor
+
 # kitsu.io api authentication details
 $api = "https://kitsu.io/api/edge/"
-consumer_key = "dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd"
-consumer_secret = "54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151"
+consumer_key = "xxxxxxxxxxxxxxxxxxxxxxx"
+consumer_secret = "xxxxxxxxxxxxxxxxxxxx"
 $consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
 
 
