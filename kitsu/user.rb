@@ -14,7 +14,7 @@ $consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
 
 
 class User
-  def initialize(id, limit=2000, status=['completed'])
+  def initialize(id, limit=2500, status=['completed'])
     @id = id
     @limit = limit
 
@@ -40,6 +40,10 @@ class User
     @uri_library = uri.to_s
   end
 
+  def name
+    @name
+  end
+
   def details
     puts "user_id: #{@id}\nuri_library: #{@uri_library}"
   end
@@ -47,10 +51,6 @@ class User
   def get_library
     response = $consumer.request(:get, @uri_library)
     return JSON.parse(response.body)
-  end
-
-  def name
-    @name
   end
 
   def get_library_entries(verbose=false)

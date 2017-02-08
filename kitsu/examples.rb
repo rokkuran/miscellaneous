@@ -15,7 +15,7 @@ require_relative 'db'
 # lib = user.get_library
 # puts JSON.pretty_generate(lib)
 
-populate_users(305, 305)
+populate_users(901, 1000)
 
 # # query = {'name' => 'muon'}
 # # query = {'library.rating' => {'$lte': 0}}
@@ -23,9 +23,10 @@ populate_users(305, 305)
 # # query = {'library.rating' => {'$gte': 4}}
 # # query = {'library' => {'$elemMatch' => {'title' => 'Cowboy Bebop'}}}
 # query = {'user_id' => 4016}
-#
+# query = {}
 # users = Collection.new('users')
-# users.query(query)
+# # puts users.query(query)
+# users.count(query)
 
 
 #********************** ANIME RELATED **********************

@@ -100,7 +100,7 @@ if __name__ == '__main__':
         a = np.argsort(cs, axis=1)[index][::-1][1:n + 1]
         return zip(y[a], cs[index][a])
 
-    index = 6
+    index = 1525
     print '\ncosine_similarity: %s' % y[index]
     for k, v in recommend(index, cs, y, 10):
         print '%s: %.4f' % (k, v)
