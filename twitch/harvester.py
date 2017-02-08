@@ -12,12 +12,6 @@ try:
 except Exception as e:
     raise e
 
-config = yaml.safe_load(open('config.yml', 'rb'))
-HOST = config['HOST']
-PORT = config['PORT']
-NICK = config['NICK']
-PASS = config['PASS']
-
 
 class Harvester(Bot):
     """"""
@@ -30,13 +24,17 @@ class Harvester(Bot):
         if self.verbose:
             print '%s: %s' % (username, msg)
 
-        with open('{}/{}.csv'.format(self.output_path, self.channel), 'ab') as f:
+        filepath = '{}/{}.csv'.format(self.output_path, self.channel)
+        with open(filepath, 'ab') as f:
             writer = csv.writer(f)
             t = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
-            writer.writerow([t, username, msg])
+            try:
+                writer.writerow([t, username, msg])
+            except UnicodeEncodeError as e:
+                print '\n%s\n' % e
 
 
 if __name__ == '__main__':
     path = '/home/rokkuran/workspace/miscellaneous/twitch/output/'
-    harvester = Harvester(username=NICK, channel=CHAN, output_path=path)
+    harvester = Harvester(channel=CHAN, output_path=path)
     harvester.run()

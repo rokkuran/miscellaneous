@@ -12,13 +12,6 @@ from nltk.corpus import stopwords
 from string import punctuation
 
 
-config = yaml.safe_load(open('config.yml', 'rb'))
-HOST = config['HOST']
-PORT = config['PORT']
-NICK = config['NICK']
-PASS = config['PASS']
-
-
 class CountBot(Bot):
     """"""
     def __init__(self, output_path=None, **kwargs):
@@ -33,6 +26,7 @@ class CountBot(Bot):
         tokens = [x for x in tokens if x not in exclusions]
         self.counts.update(tokens)
 
+        # TODO: make n_recent an argument
         if len(self.recent) >= 200:
             self.recent = self.recent[200:] + tokens
         else:
@@ -54,5 +48,5 @@ class CountBot(Bot):
 
 
 if __name__ == '__main__':
-    bot = CountBot(username=NICK, channel="#beyondthesummit2")
+    bot = CountBot(channel="#merlinidota")
     bot.run()

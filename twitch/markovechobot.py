@@ -12,13 +12,6 @@ from time import sleep
 from datetime import datetime
 
 
-config = yaml.safe_load(open('config.yml', 'rb'))
-HOST = config['HOST']
-PORT = config['PORT']
-NICK = config['NICK']
-PASS = config['PASS']
-
-
 class MarkovTwitch(MarkovModel):
     def _punctuation_fix(self, text):
         return re.sub(r'\s([?.!"](?:\s|$))', r'\1', text)
@@ -57,14 +50,14 @@ class MarkovEchoBot(Bot):
         self.words = []
 
     def _write_bot_msg(self, msg):
-        args = (self.output_path, self.channel, self.username)
+        args = (self.output_path, self.channel, self._nickname)
         filepath = '%s/%s_%s.csv' % args
         with open(filepath, 'ab') as f:
             try:
                 writer = csv.writer(f)
                 time_format = '%Y-%m-%d %H:%M:%S'
                 t = datetime.strftime(datetime.now(), time_format)
-                writer.writerow([t, NICK, msg])
+                writer.writerow([t, self._nickname, msg])
             except UnicodeEncodeError as e:
                 print '\n\n%s\n\n' % e
 
@@ -106,17 +99,9 @@ class MarkovEchoBot(Bot):
 
 if __name__ == '__main__':
     path = '/home/rokkuran/workspace/miscellaneous/twitch/output/'
-    # channel = '#wagamamatv'
-    # channel = '#admiralbulldog'
-    # channel = '#shroud'
-    # channel = '#sing_sing'
-    # channel = '#eleaguetv'
-    # channel = '#krist1n'
-    channel = '#beyondthesummit2'
 
     markov_echo_bot = MarkovEchoBot(
-        username=NICK,
-        channel=channel,
+        channel='#merlinidota',
         output_path=path,
         markov_max_length=10,
         verbose=True)

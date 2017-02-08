@@ -14,21 +14,21 @@ PASS = config['PASS']
 
 class Bot(object):
     """"""
-    def __init__(self, username, channel, n_msg_per_sec=100):
+    def __init__(self, channel, n_msg_per_sec=100):
         super(Bot, self).__init__()
-        self.username = username
+        self._nickname = NICK
         self.channel = channel
-        self.connect(username, channel)
-        print username, channel, '\n', '-' * (len(username + channel) + 1)
+        self.connect(channel)
+        print NICK, channel, '\n', '-' * (len(NICK + channel) + 1)
 
         self._msg_count = 0
         self.n_msg_per_sec = n_msg_per_sec
 
-    def connect(self, username, channel):
+    def connect(self, channel):
         self._socket = socket.socket()
         self._socket.connect((HOST, PORT))
         self._socket.send("PASS {}\r\n".format(PASS).encode("utf-8"))
-        self._socket.send("NICK {}\r\n".format(username).encode("utf-8"))
+        self._socket.send("NICK {}\r\n".format(NICK).encode("utf-8"))
         self._socket.send("JOIN {}\r\n".format(channel).encode("utf-8"))
 
     def chat(self, msg):
