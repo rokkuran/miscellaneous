@@ -30,7 +30,9 @@ class UtilityMatrix(object):
         self.anime_id_title_map = {}  # uid is the utility_matrix column id
         self.username_uid_map = {}
 
-        cursor = self.collection.find()
+        # TODO: make min library entry count a parameter
+        cursor = self.collection.find({'$where': 'this.library.length > 50'})
+        # cursor = self.collection.find()
         for i, user in enumerate(cursor):
             username = user['name'].encode('utf-8')
             self.username_uid_map[username] = i
@@ -68,15 +70,20 @@ class CFMemory(UtilityMatrix):
 
     def _user_rating_counts(self):
         return np.apply_along_axis(
-            lambda x: len(x[~np.isnan(x)]), axis=1, self.utility_matrix)
+            lambda x: len(x[~np.isnan(x)]), axis=1, arr=self.utility_matrix)
 
     def user_vector(self, username):
         uid = self.username_uid_map[username]
         return self.utility_matrix.iloc[uid].values
 
-    def similar_users(self, username, n_pool):
+    def similar_users(self, username, n_pool, names=False):
         uid = self.username_uid_map[username]
-        return np.argsort(self.user_sim[uid])[1:n_pool + 1]
+        su_ids = np.argsort(self.user_sim[uid])[1:n_pool + 1]
+        if names:
+            uid_username_map = {v: k for k, v in self.username_uid_map.items()}
+            return [uid_username_map[i] for i in su_ids]
+        else:
+            return su_ids
 
     def predict(self, username, n_rec, n_pool, method='mean'):
         u = self.user_vector(username)
@@ -140,21 +147,35 @@ class CFMemory(UtilityMatrix):
 
 
 if __name__ == '__main__':
-    # cfm = CFMemory()
-    # recs = cfm.recommend('muon', 10, 10)
-    # # print cfm.utility_matrix
-    # # recs = cfm.rec_user_based('muon', n_rec=10, n_pool=10)
-    # for i, r in enumerate(recs, start=1):
-    #     print '%s: %s' % (i, r)
+    cfm = CFMemory()
+    # print cfm.utility_matrix
 
+    n_pool = 25
 
-    um = UtilityMatrix()
+    similar_users = cfm.similar_users('muon', n_pool=n_pool, names=True)
+    print '\nsimilar users:'
+    for i, user in enumerate(similar_users, start=1):
+        print '%s: %s' % (i, user)
 
-    a = um.utility_matrix.as_matrix()
+    print '\nrecommendations:'
+    recs = cfm.recommend('muon', n_rec=20, n_pool=n_pool)
+    for i, r in enumerate(recs, start=1):
+        print '%s: %s' % (i, r)
 
-    a_mean = np.nanmean(a, axis=1)[:, np.newaxis]
-    a_adj = a - a_mean
-    a_adj[np.isnan(a_adj)] = 0
-    s = pairwise_distances(a, metric='cosine')
-    sa = s.dot(a_adj)
-    p = a_mean + sa / np.abs(s).sum(axis=1)[:, np.newaxis]
+    #
+    # um = UtilityMatrix()
+    #
+    # a = um.utility_matrix.as_matrix()
+    #
+    # a_mean = np.nanmean(a, axis=1)[:, np.newaxis]
+    # a_adj = a - a_mean
+    # a_adj[np.isnan(a_adj)] = 0
+    # s = pairwise_distances(a, metric='cosine')
+    # sa = s.dot(a_adj)
+    # p = a_mean + sa / np.abs(s).sum(axis=1)[:, np.newaxis]
+
+    # client = MongoClient()
+    # db = client.kitsu
+    #         # { $where: "this.library.length > 1" }
+    # # cursor = db.users.find({ 'name': "muon"})
+    # cursor = db.users.find({'$where': 'this.library.length > 100'})
