@@ -12,11 +12,11 @@ m = 15  # best patch size
 e = 3  # elite patch size
 nep = 12  # number of forager bees recruited to elite sites
 nsp = 8  # number of forager bees recruited around the non-elite best patches
-ngh = 1  # neibourhood size
+ngh = 1  # neigbourhood size
 max_iter = 10
 epsilon = 0.001  # tolerance
 
-search_space = [-2, 2]
+search_space = [0, 1]
 
 f(x) = -exp(-(x - 0.8)^2)
 
@@ -67,18 +67,32 @@ end
 # forager_bees = recruit_forager_bees(f, elite_bees, patch_size, search_space)
 # println("forager_bees:\n$forager_bees")
 
-elite_forager_bees = []
-for bee in elite_bees
-  efb = recruit_forager_bees(f, bee, nep, patch_size, search_space)
-  push!(elite_forager_bees, efb)
-end
-elite_forager_bees = vcat(elite_forager_bees...)
-println("elite_forager_bees:\n$elite_forager_bees")
+# new_elite_bees = []
+# for bee in elite_bees
+#   efb = recruit_forager_bees(f, bee, nep, patch_size, search_space)
+#   new_best_elite_bee = get_n_best_bees(efb, 1)
+#   push!(new_elite_bees, new_best_elite_bee)
+# end
+# new_elite_bees = vcat(new_elite_bees...)
+# println("new_elite_bees:\n$new_elite_bees")
 
-non_elite_forager_bees = []
-for bee in non_elite_bees
-  nefb = recruit_forager_bees(f, bee, nsp, patch_size, search_space)
-  push!(non_elite_forager_bees, nefb)
+
+function best_neighbour_bees(bees, f, n_bees, patch_size, search_space)
+  new_best_local_bees = []
+  for bee in bees
+    fb = recruit_forager_bees(f, bee, n_bees, patch_size, search_space)
+    best_local_bee = get_n_best_bees(fb, 1)
+    push!(new_best_local_bees, best_local_bee)
+  end
+  new_best_local_bees = vcat(new_best_local_bees...)
 end
-non_elite_forager_bees = vcat(non_elite_forager_bees...)
-println("non_elite_forager_bees:\n$non_elite_forager_bees")
+
+new_elite_bees = best_neighbour_bees(elite_bees, f, nep, patch_size, search_space)
+new_non_elite_bees = best_neighbour_bees(non_elite_bees, f, nsp, patch_size, search_space)
+
+println("new_elite_bees: $(size(new_elite_bees))\n$new_elite_bees")
+println("new_non_elite_bees: $(size(new_non_elite_bees))\n$new_non_elite_bees")
+
+new_best_bees = vcat(new_elite_bees, new_non_elite_bees)
+best_bee = get_n_best_bees(new_best_bees, 1)
+println("new_best_bee = $best_bee")
