@@ -62,9 +62,8 @@ end
 
 
 function bee_algorithm(f, n, m, e, nep, nsp, ngh, n_iter, ngh_scaling_factor, search_space, verbose=true)
+  best_bee = nothing
   i = 0
-  error = 77.
-  best_bee = 0
   while i < n_iter
     if i == 0
       # create initial bee population
