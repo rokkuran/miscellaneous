@@ -99,11 +99,11 @@ e = 3  # number of elite patches
 nep = 12  # number of forager bees recruited to elite best patches
 nsp = 8  # number of forager bees recruited around the non-elite best patches
 ngh = 1  # neigbourhood patch size
-max_iter = 100
+max_iter = 50
 ϵ = 0.001  # tolerance
 
 ngh = 1
-ngh_scaling_factor = 0.95
+ngh_scaling_factor = 0.75
 
 f(x) = -exp(-(x - 0.8)^2)
 search_space = [-5, 5]
