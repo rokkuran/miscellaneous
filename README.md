@@ -3,13 +3,10 @@ A place for smaller projects that have no other home.
 
 
 
-## Paricle Swarm Optimisation
-- N-dimensional particle swarm optimisation (PSO).
-- Preliminary work to apply to model parameter tuning.
-
-#### Further Work
-- Integer based PSO.
-- Refactor into class for easier application to other problems.
+## Optimisation
+- N-dimensional Particle Swarm Optimisation (PSO)
+- 1-dimensional Bees Algorithm (BA).
+- Preliminary work applying PSO to ML model parameter tuning.
 
 
 
