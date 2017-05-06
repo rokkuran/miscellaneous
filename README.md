@@ -5,7 +5,7 @@ A place for smaller projects that have no other home.
 
 ## Optimisation
 - N-dimensional Particle Swarm Optimisation (PSO)
-- 1-dimensional Bees Algorithm (BA).
+- N-dimensional Bees Algorithm (BA).
 - Preliminary work applying PSO to ML model parameter tuning.
 
 
