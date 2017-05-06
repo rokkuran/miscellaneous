@@ -50,7 +50,7 @@ def pso_parameter_tuning(clf, X, y, bounds, swarm_size, n_iter, n_splits=5):
         for i, X_train, X_val, y_train, y_val in cv_splits:
             model = pipeline.fit(X_train, y_train)
             y_pred = model.predict(X_val)
-            # TODO: use better loss metric for minimisation
+            # TODO: log_loss fails for multiclass
             # ll.append(metrics.log_loss(y_val, y_pred))
             ll.append(1 - metrics.accuracy_score(y_val, y_pred))
 

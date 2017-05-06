@@ -71,7 +71,7 @@ n_iter=50
 ω=0.75
 ϕp=0.02
 ϕg=0.1
-bounds = [0, 1]
+bounds = [-5, 5]
 
 z = pso(f, swarm_size, bounds, n_iter, ω, ϕp, ϕg)
 println("\nglobal best after $n_iter iterations = $z")

@@ -10,8 +10,8 @@ class Particle(object):
         self.x = x  # position
         self.p = x.copy()  # best known position
         self.v = v  # velocity
-        self.f_x = 0  # last function value for x
-        self.f_p = 0  # last function value for p
+        # self.f_x = 0  # last function value for x
+        # self.f_p = 0  # last function value for p
 
 
 def pso(f, swarm_size, bounds, n_iter=10, omega=0.75, phi_p=0.02, phi_g=0.1,
