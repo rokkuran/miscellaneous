@@ -70,7 +70,7 @@ function bee_algorithm(f, n, m, e, nep, nsp, ngh, n_iter, ngh_scaling_factor, se
       bees = create_scout_bees(n, f, search_space)
       best_bee = get_best_bee(bees)
       if verbose
-        println("best_bee = $best_bee")
+        println("best_bee=$best_bee")
       end
     end
 
@@ -90,7 +90,7 @@ function bee_algorithm(f, n, m, e, nep, nsp, ngh, n_iter, ngh_scaling_factor, se
 
     best_bee = copy(new_best_bee)
     if verbose
-      println("$i: best_bee=$best_bee | ngh=$ngh; error=$error")
+      println("$i: best_bee=$best_bee | ngh=$ngh")
     end
     ngh *= ngh_scaling_factor
     i += 1
