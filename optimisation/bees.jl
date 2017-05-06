@@ -10,34 +10,63 @@ end
 Base.copy(m::Bee) = Bee(copy(m.position), copy(m.value))
 
 
-function create_scout_bee(f, search_space, dimensions)
-  position = rand(Uniform(search_space...), dimensions)
+function create_scout_bee(f, search_space)
+  position = []
+  for bound in search_space
+    # println(b)
+    push!(position, rand(Uniform(bound...)))
+  end
+  # println(position)
+  # println(f(position...))
   Bee(position, f(position...))
 end
 
 
 function create_scout_bees(n, f, search_space)
-  [create_scout_bee(f, search_space, 1) for _ in 1:n]
+  [create_scout_bee(f, search_space) for _ in 1:n]
 end
 
 
 get_n_best_bees(bees, n) = sort(bees, by=x->x.value)[1:n]
 get_best_bee(bees) = get_n_best_bees(bees, 1)[1]
 
+column(a, n) = [a[i][n] for i=1:length(a)]
 
 function recruit_forager_bees(f, bee, n, ngh, search_space)
   ss_min, ss_max = search_space
   forager_bees = [bee]  # include original bee
   for _ in 1:n
+    # Δx = rand(size(bee.position)) * ngh
     Δx = rand(size(bee.position)) * ngh
-    fbx = rand() < 0.5 ? bee.position + Δx : bee.position - Δx
-    #TODO: this will need to be fixed for multidimensional spaces
-    if fbx[1] < ss_min[1]
-      fbx = ss_min
-    elseif fbx[1] > ss_max[1]
-      fbx = ss_max
+    # fbx = rand() < 0.5 ? bee.position + Δx : bee.position - Δx
+    x = rand() < 0.5 ? bee.position + Δx : bee.position - Δx
+
+    for bound in search_space
+      # println(bound)
+      # println(x)
+      b_min, b_max = bound
+      # for (i, (b, x)) in enumerate(zip(bound, np))
+      for (i, v) in enumerate(x)
+        # if !(b_min < v < b_max)
+        #   println("out of bounds: [before] $bound | x=$x")
+        # end
+        if v < b_min
+          # println("out of bounds: [before] $bound | $v | x=$x")
+          x[i] = b_min
+          # println("out of bounds:  [after] $bound | $v | x=$x")
+        end
+        if v > b_max
+          # println("out of bounds: [before] $bound | $v | x=$x")
+          x[i] = b_max
+          # println("out of bounds:  [after] $bound | $v | x=$x")
+        end
+        # if !(b_min < v < b_max)
+        #   println("out of bounds:  [after] $bound | x=$x")
+        # end
+      end
+      println("$x")
     end
-    push!(forager_bees, Bee(fbx, f(fbx...)))
+    push!(forager_bees, Bee(x, f(x...)))
   end
   forager_bees
 end
@@ -106,7 +135,15 @@ ngh = 1
 ngh_scaling_factor = 0.75
 
 f(x) = -exp(-(x - 0.8)^2)
-search_space = [-5, 5]
+# search_space = Array[[-5, 5]]
 
-result = bee_algorithm(f, n, m, e, nep, nsp, ngh, max_iter, ngh_scaling_factor, search_space)
-println("\n\nresult=$result")
+rosenbrock(x, y) = (1 - x)^2 + 100 * (y - x^2)^2   # min @ (1, 1 )
+search_space = Array[[-2, 2], [-3, 3]]
+
+a = create_scout_bee(rosenbrock, search_space)
+println(a)
+result = bee_algorithm(rosenbrock, n, m, e, nep, nsp, ngh, max_iter, ngh_scaling_factor, search_space)
+
+
+# result = bee_algorithm(f, n, m, e, nep, nsp, ngh, max_iter, ngh_scaling_factor, search_space)
+# println("\n\nresult=$result")
