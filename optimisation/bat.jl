@@ -70,6 +70,7 @@ function move_bats(bats, f, f_min, f_max, r, γ, A, α, search_space, verbose=tr
     # generating local bats near global best
     local_bat = Bat(x, ν, f(x...))
     if rand() > r
+      # TODO: incorporate loudness to local update
       local_x = g + 0.001 * rand(Normal(0, 1), length(g))
       local_bat = Bat(local_x, ν, f(local_x...))
       if verbose
@@ -77,7 +78,7 @@ function move_bats(bats, f, f_min, f_max, r, γ, A, α, search_space, verbose=tr
       end
     end
 
-    # update if solution improves or not too loud
+    # TODO: include pulse rate and loudness updates properly
     if (local_bat.fitness <= bat.fitness) & (rand() < A)
       # r *= (1 - exp(-γ))
       r *= γ
@@ -95,7 +96,6 @@ function move_bats(bats, f, f_min, f_max, r, γ, A, α, search_space, verbose=tr
 
     push!(updated_bats, local_bat)
   end
-  # println("    \nbest bat position = $(best_bat.x) | fitness = $(best_bat.fitness)")
   updated_bats, r, A
 end
 
@@ -119,7 +119,6 @@ search_space = Array[[0, 2]]
 
 
 bats = create_bat_population(n, f, search_space)
-# println(bats)
 
 i = 1
 while i <= n_iter
