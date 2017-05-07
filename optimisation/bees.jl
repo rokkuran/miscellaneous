@@ -137,6 +137,10 @@ function test_all_functions()
   result = test_function(polynomial, search_space)
   println("\nmin @ (1, 2, 3) [polynomial] result=$result")
 
+  rastrigin(x, y) = x^2 + y^2 - cos(18 * x) - cos(18 * y) + 2  # min @ (0, 0)
+  search_space = Array[[-1, 1], [-1, 1]]
+  result = test_function(rastrigin, search_space)
+  println("\nmin @ (0, 0) [rastrigin] result=$result")
 end
 
 
