@@ -39,17 +39,17 @@ get_best_bat(bats) = n_best_bats(bats, 1)[1]
 frequency(f_min, f_max, d) = f_min + (f_min - f_max) * β(f_min, f_max, d)
 
 
-function enforce_bounds(x, search_space)
+function enforce_bounds(x, search_space, verbose=false)
   for bound in search_space
     b_min, b_max = bound
     for (i, z) in enumerate(x)
       if z < b_min
         x[i] = b_min
-        println("\tbounds update: $z -> $b_min")
+        verbose && println("\tbounds update: $z -> $b_min")
       end
       if z > b_max
         x[i] = b_max
-        println("\tbounds update: $z -> $b_max")
+        verbose && println("\tbounds update: $z -> $b_max")
       end
     end
   end
@@ -71,7 +71,7 @@ function move_bats(bats, f, f_min, f_max, γ, α, search_space, verbose=true)
     x += bat.ν
 
     verbose && println("    bat $i: \n\tx: $(bat.x) -> $x \n\tν: $(bat.ν) -> $ν")
-    x = enforce_bounds(x, search_space)
+    x = enforce_bounds(x, search_space, verbose)
 
     # generating local bats near global best
     local_bat = Bat(x, ν, bat.A, bat.r, f(x...))
@@ -102,35 +102,80 @@ function move_bats(bats, f, f_min, f_max, γ, α, search_space, verbose=true)
 end
 
 
+function bat_algorithm(f, n_bats, n_iter, f_min, f_max, γ, α, search_space, verbose=true)
+  bats = create_bat_population(n_bats, f, search_space)
 
-n = 50
-f_min, f_max = [0, 2]
-# r = 0.01  # pulse rate
-r = 0.1  # pulse rate
-γ = 0.9  # pulse rate scaling factor (for increasing r)
-# γ = 1  # pulse rate scaling factor (for increasing r)
-A = 2  # loudness
-# A = 0.5  # loudness
-α = 0.9  # loudness scaling factor (for decreasing A)
-# α = 1  # loudness scaling factor (for decreasing A)
+  i = 1
+  while i <= n_iter
+    verbose && println("\n\niteration $i")
+    bats = move_bats(bats, f, f_min, f_max, γ, α, search_space, verbose)
+    i += 1
+  end
 
-n_iter = 50
-
-f(x) = -exp(-(x - 1)^2) + 1  # min @ x=1
-search_space = Array[[0, 2]]
-
-
-# bats = create_bat_population(n, f, search_space, A, r)
-bats = create_bat_population(n, f, search_space)
-
-i = 1
-while i <= n_iter
-  println("\n\niteration $i")
-  # bats = move_bats(bats, f, f_min, f_max, r, γ, A, α, search_space, true)
-  bats = move_bats(bats, f, f_min, f_max, γ, α, search_space, true)
-  i += 1
+  bb = get_best_bat(bats)
+  verbose && println("\n\n$bb")
+  verbose && println("min @ ($(bb.x), $(bb.fitness))")
+  bb
 end
 
-bb = get_best_bat(bats)
-println("\n\n$bb")
-println("min @ ($(bb.x), $(bb.fitness))")
+
+function test_function(f, search_space)
+  n_bats = 100
+  f_min, f_max = [0, 2]
+  # r = 0.01  # pulse rate
+  r = 0.1  # pulse rate
+  γ = 0.9  # pulse rate scaling factor (for increasing r)
+  # γ = 1  # pulse rate scaling factor (for increasing r)
+  A = 2  # loudness
+  # A = 0.5  # loudness
+  α = 0.9  # loudness scaling factor (for decreasing A)
+  # α = 1  # loudness scaling factor (for decreasing A)
+  n_iter = 50
+
+  bat_algorithm(f, n_bats, n_iter, f_min, f_max, γ, α, search_space, true)
+end
+
+
+rastrigin(x, y) = x^2 + y^2 - cos(18 * x) - cos(18 * y) + 2  # min @ (0, 0)
+search_space = Array[[-1, 1], [-1, 1]]
+result = test_function(rastrigin, search_space)
+println("\nmin @ (0, 0) [rastrigin] result=$(result.x)")
+println("$result\n")
+
+
+function test_all_functions()
+  f(x) = -exp(-(x - 1)^2) + 1  # min @ x=1
+  search_space = Array[[-5, 5]]
+  result = test_function(f, search_space)
+  println("\nmin @ 1 [gaussian] | result=$(result.x)")
+  println("$result\n")
+
+  rosenbrock(x, y) = (1 - x)^2 + 100 * (y - x^2)^2   # min @ (x, y)=(1, 1)
+  search_space = Array[[-1, 1.5], [-2, 3]]
+  result = test_function(rosenbrock, search_space)
+  println("\nmin @ (1, 1) [rosenbrock] | result=$(result.x)")
+  println("$result\n")
+
+  matyas(x, y) = 0.26 * (x^2 + y^2) - 0.48 * x * y  # min @ (x, y)=(0, 0)
+  search_space = Array[[-5, 5], [-5, 5]]
+  result = test_function(matyas, search_space)
+  println("\nmin @ (0, 0) [matyas] result=$(result.x)")
+  println("$result\n")
+
+  # minimum @ (a, b, c)
+  polynomial(x, y, z, a=1, b=2, c=3) = (x - a)^2 + (y - b)^2 + (z - c)^2
+  search_space = Array[[-5, 7], [-2, 14], [-9, 10]]
+  result = test_function(polynomial, search_space)
+  println("\nmin @ (1, 2, 3) [polynomial] result=$(result.x)")
+  println("$result\n")
+
+
+  rastrigin(x, y) = x^2 + y^2 - cos(18 * x) - cos(18 * y) + 2  # min @ (0, 0)
+  search_space = Array[[-1, 1], [-1, 1]]
+  result = test_function(rastrigin, search_space)
+  println("\nmin @ (0, 0) [rastrigin] result=$(result.x)")
+  println("$result\n")
+end
+
+
+# test_all_functions()
