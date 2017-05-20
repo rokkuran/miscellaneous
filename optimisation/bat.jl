@@ -5,6 +5,7 @@ using Distributions
 type Bat
   x::Array{Float64}
   ν::Array{Float64}
+  # A::Float64
   fitness::Float64
 end
 
@@ -33,7 +34,7 @@ get_best_bat(bats) = n_best_bats(bats, 1)[1]
 frequency(f_min, f_max, d) = f_min + (f_min - f_max) * β(f_min, f_max, d)
 
 
-function adhere_to_bounds(x, search_space)
+function enforce_bounds(x, search_space)
   for bound in search_space
     b_min, b_max = bound
     for (i, z) in enumerate(x)
@@ -62,10 +63,9 @@ function move_bats(bats, f, f_min, f_max, r, γ, A, α, search_space, verbose=tr
     x, ν = bat.x, bat.ν
     ν += (bat.x - g) .* frequency(f_min, f_max, length(x))
     x += bat.ν
-    if verbose
-      println("    bat $i: \n\tx: $(bat.x) -> $x \n\tν: $(bat.ν) -> $ν")
-    end
-    x = adhere_to_bounds(x, search_space)
+
+    verbose && println("    bat $i: \n\tx: $(bat.x) -> $x \n\tν: $(bat.ν) -> $ν")
+    x = enforce_bounds(x, search_space)
 
     # generating local bats near global best
     local_bat = Bat(x, ν, f(x...))
@@ -73,9 +73,7 @@ function move_bats(bats, f, f_min, f_max, r, γ, A, α, search_space, verbose=tr
       # TODO: incorporate loudness to local update
       local_x = g + 0.001 * rand(Normal(0, 1), length(g))
       local_bat = Bat(local_x, ν, f(local_x...))
-      if verbose
-        println("\n\tlocal update: \n\tx: $(bat.x) -> $(local_bat.x) \n\tfitness: $(bat.fitness) -> $(local_bat.fitness)")
-      end
+      verbose && println("\n\tlocal update: \n\tx: $(bat.x) -> $(local_bat.x) \n\tfitness: $(bat.fitness) -> $(local_bat.fitness)")
     end
 
     # TODO: include pulse rate and loudness updates properly
