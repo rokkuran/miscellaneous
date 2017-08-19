@@ -1,15 +1,15 @@
 using Distributions
 
 
-type Particle
-  x::Array{Float64}  # position
-  p::Array{Float64}  # best known position
-  v::Array{Float64}  # velocity
-  Particle(x, v) = new(x, x, v)
+mutable struct Particle
+  x::Vector{Float64}  # position
+  b::Vector{Float64}  # best known position
+  v::Vector{Float64}  # velocity
 end
+Particle(x, v) = Particle(x, x, v)
 
 
-function create_particle(f, search_space)
+function create_particle(f::Function, search_space::AbstractArray)
   x, v = [], []
   for bound in search_space
     b_low, b_high = bound
@@ -20,41 +20,42 @@ function create_particle(f, search_space)
 end
 
 
-function status(msg, i, j, from, to, f_to)
+function status(msg::String, i::Int64, j::Int64, from::AbstractArray,
+    to::AbstractArray, f_to::Float64)
   println("$i: $j $msg | $from -> $to [f = $f_to]")
 end
 
 
-function pso(f, swarm_size, bounds, n_iter=50, ω=0.75, ϕp=0.02, ϕg=0.1, verbose=false)
+function pso(f::Function, swarm_size::Int64, bounds::AbstractArray,
+    n_iter::Int64=50, ω::Float64=0.75, ϕp::Float64=0.02, ϕg::Float64=0.1,
+    verbose::Bool=false)
+
   verbose && println("running particle swarm optimisation...\n\n")
   verbose && println("swarm_size = $swarm_size\nn_iter = $n_iter\nω=$ω\nϕp = $ϕp\nϕg = $ϕg\n")
 
   particles = [create_particle(f, bounds) for _ in 1:swarm_size]
 
   #TODO: there must be a more elegant way to acheive this??
-  g = particles[1].p
-  for (i, particle) in enumerate(particles[2:end])
-    if f(particle.p...) < f(g...)
-      g = particle.p
+  g = particles[1].b
+  for (i, P) in enumerate(particles[2:end])
+    if f(P.b...) < f(g...)
+      g = P.b
     end
   end
 
   i = 0
   while i < n_iter
-    for (j, particle) in enumerate(particles)
+    for (j, P) in enumerate(particles)
       rp, rg = rand(Uniform(0, 1), 2)
-      particle.v = ω * particle.v
-      particle.v += ϕp * rp * (particle.p - particle.x)
-      particle.v += ϕg * rg * (g - particle.x)
+      P.v = ω * P.v + (ϕp * rp * (P.b - P.x)) + (ϕg * rg * (g - P.x))
+      P.x += P.v
 
-      particle.x += particle.v
-
-      if f(particle.x...) < f(particle.p...)
-        verbose && status("particle best position update", i, j, particle.p, particle.x, f(particle.p...))
-        particle.p = particle.x
-        if f(particle.p...) < f(g...)
-          verbose && status("new global best", i, j, g, particle.x, f(particle.p...))
-          g = particle.p
+      if f(P.x...) < f(P.b...)
+        verbose && status("particle best position update", i, j, P.b, P.x, f(P.b...))
+        P.b = P.x
+        if f(P.b...) < f(g...)
+          verbose && status("new global best", i, j, g, P.x, f(P.b...))
+          g = P.b
         end
       end
     end
@@ -64,14 +65,24 @@ function pso(f, swarm_size, bounds, n_iter=50, ω=0.75, ϕp=0.02, ϕg=0.1, verbo
 end
 
 
-function test_function(f, bounds)
-  swarm_size = 100
-  n_iter = 50
+function test_function(f::Function, bounds::AbstractArray)
+  swarm_size = 200
+  n_iter = 100
   ω = 0.75
   ϕp = 0.02
   ϕg = 0.1
+  pso(f, swarm_size, bounds, n_iter, ω, ϕp, ϕg, false)
+end
 
-  pso(f, swarm_size, bounds, n_iter, ω, ϕp, ϕg)
+
+function repeated_accuracy(f::Function, search_space::AbstractArray,
+    minimum_location::AbstractArray, n::Int64)
+    results = []
+    for i in 1:n
+        a = minimum_location .- test_function(f, search_space)
+        push!(results, a)
+    end
+    results
 end
 
 
@@ -104,4 +115,10 @@ function test_all_functions()
 end
 
 
-test_all_functions()
+# test_all_functions()
+
+rastrigin(x::T, y::T) where T <: Float64 = x^2 + y^2 - cos(18 * x) - cos(18 * y) + 2  # min @ (0, 0)
+search_space = Array[[-1, 1], [-1, 1]]
+minimum_location = [0, 0]
+z = repeated_accuracy(rastrigin, search_space, minimum_location, 100)
+println(z)
