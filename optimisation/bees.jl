@@ -2,11 +2,10 @@ import Base.copy
 using Distributions
 
 
-type Bee
+mutable struct Bee
   position
   value
 end
-
 Base.copy(m::Bee) = Bee(copy(m.position), copy(m.value))
 
 
