@@ -2,6 +2,7 @@ using Plots
 pyplot(leg=false)
 
 
+
 mutable struct State
     vertices::AbstractArray
     p::AbstractArray
@@ -27,31 +28,6 @@ function update!(s::State; verbose::Bool=false)
     end
     s
 end
-
-
-# function bounds(s::State)
-
-#     x_min, x_max = s.vertices[1][1],s.vertices[1][1]
-#     y_min, y_max = s.vertices[1][2],s.vertices[1][2]
-#     for (i, v) in enumerate(s.vertices)
-#         if i > 1
-#             if v[1] < x_min
-#                 x_min = v[1]
-#             elseif v[1] > x_max
-#                 x_max = v[1]
-#             end
-
-#             if v[2] < y_min
-#                 y_min = v[2]
-#             elseif v[1] > y_max
-#                 y_max = v[2]
-#             end
-#         end
-#     end
-
-#     (x_min, x_max), (y_min, y_max)
-# end
-
 
 
 function bounds(s::State)
@@ -111,8 +87,14 @@ end
 
 function main()
 
+    # # sierpinski gasket
+    # state = State(
+    #     [[0, 2], [-2, 0], [2, 0]],  # equalateral triangle
+    #     [0, 0]  # initial value
+    # )
+
     state = State(
-        [[0, 5], [-2, 0], [2, 0], [0, -3]],  # vertices
+        [[0, 5], [-2, 0], [2, 0], [0, -3]],  # kite quadralateral
         [0, 0]  # initial value
     )
     # TODO: work out how to set freq as variable when using every from @gif macro
