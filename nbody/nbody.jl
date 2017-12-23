@@ -7,7 +7,7 @@ const M☉ = 1.98855 * 10.0^30
 const ONE_DAY = 24*3600
 
 
-type Body
+mutable struct Body
   mass::Float64
   position::Vector{Float64}
   velocity::Vector{Float64}
@@ -26,7 +26,7 @@ kinetic_energy(b::Body) = 0.5 * (b.velocity' * b.velocity)[1]
 potential_energy(b::Body) = -b.mass / sqrt((b.position' * b.position)[1])
 total_energy(b::Body) = kinetic_energy(b) + potential_energy(b)
 
-function check_energy_conservation(b::Body, E₀::Float64, verbose=false)
+function check_energy_conservation(b::Body, E₀::Float64, verbose::Bool=false)
   K = kinetic_energy(b)
   U = potential_energy(b)
   E = K + U

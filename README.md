@@ -2,30 +2,20 @@
 A place for smaller projects that have no other home.
 
 
-
 ## Optimisation
-- N-dimensional Particle Swarm Optimisation (PSO)
+- N-dimensional Particle Swarm Optimisation (PSO).
 - N-dimensional Bees Algorithm (BA).
 - Preliminary work applying PSO to ML model parameter tuning.
 
 
+## Miscellaneous Maths
+- How to choose best toilet simulation.
+- Mandelbrot image generation.
+- Sierpinski gasket animation - extended to other polygons.
 
-## Markov Model
-Markov model for text generation.
 
-
-
-## Twitch
-- Base bot class for connecting to [Twitch][twitch] IRC channels.
-- Channel based chat harvester.
-- Markov model based generative chat bot.
-- Preliminary work for frequency/statistics related collection bot.
-
-#### Further Work
-- Improve _markovechobot_ grammatical sense.
-- Incorporate POS tagging into model (resurrect from scratch dir...)
-- Fix regex for rare messages that pass beyond unformatted.
-
+## Basic Solar System simulation
+- Simple simulation of planets - needs work.
 
 
 ## Anime Recommenders
@@ -36,5 +26,4 @@ Markov model for text generation.
 
 
 
-[twitch]: twitch.tv
 [kitsu]: kitsu.io
