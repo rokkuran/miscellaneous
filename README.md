@@ -31,7 +31,8 @@ A few scaled down examples are shown below:
 ![Mandelbrot Set - spiral][mb_spiral] -->
 
 <img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_750_500_100000_tmp.png" width="750" /> 
-<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_lightning.png" width="325" /> <img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_spiral1.png" width="325" />
+
+<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_lightning.png" width="375" /> <img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_spiral1.png" width="375" />
 
 ### Other
 - How to choose best toilet strategy simulation.
