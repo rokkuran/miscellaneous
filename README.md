@@ -25,12 +25,16 @@ Sierpinski gasket animation using chaos game approach.
 ![Sierpinski gasket][sierpinski_gasket]
 
 ### Mandelbrot image generation
-Few examples below.
-![Mandelbrot Set - base][mb_base]
+A few scaled down examples are shown below:
+<!-- ![Mandelbrot Set - base][mb_base]
 ![Mandelbrot Set - lightning][mb_lightning]
-![Mandelbrot Set - spiral][mb_spiral]
+![Mandelbrot Set - spiral][mb_spiral] -->
 
-<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_spiral1.png" width="500" />
+<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_750_500_100000_tmp.png" width="250" />
+
+<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_lightning.png" width="250" />
+
+<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_spiral1.png" width="250" />
 
 ### Other
 - How to choose best toilet strategy simulation.
