@@ -14,6 +14,9 @@ A place for smaller projects that have no other home.
 - Sierpinski gasket animation - extended to other polygons.
 
 
+![Diffusion-limited aggregation: 1000 particles; 50k iterations; captured every 50 iterations.][dla]
+
+
 ## Basic Solar System simulation
 - Simple simulation of planets - needs work.
 
@@ -27,3 +30,5 @@ A place for smaller projects that have no other home.
 
 
 [kitsu]: kitsu.io
+
+[dla]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/dla_1000_50000_-100_100.gif "Diffusion-limited aggregation: 1000 particles; 50k iterations; captured every 50 iterations."
