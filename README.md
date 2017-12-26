@@ -12,7 +12,7 @@ A place for smaller projects that have no other home.
 
 ## Miscellaneous Mathematics
 
-### Diffusion-limited aggregation
+### Diffusion-limited Aggregation
 Simple simulation and gif creation code. First pass code, still needs some work to be more efficient.
 
 Example output simulation using 1000 particles, 50k iterations, captured every 50 iterations.
@@ -39,7 +39,7 @@ A few scaled down examples are shown below:
 
 
 
-## Basic Solar System simulation
+## Basic Solar System Simulation
 Simple simulation of planets, example output below. Needs work.
 ![planetary motion example][nbody_orbits]
 
@@ -57,7 +57,7 @@ Simple simulation of planets, example output below. Needs work.
 
 [dla]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/dla_1000_50000_-100_100.gif "Diffusion-limited aggregation."
 
-[sierpinski_gasket]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/sierpinksi_gasket.gif "Sierpinski Gasket."
+[sierpinski_gasket]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/sierpinski_gasket.gif "Sierpinski Gasket."
 
 [mb_base]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_750_500_100000_tmp.png "Mandelbrot Set."
 
