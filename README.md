@@ -41,7 +41,7 @@ A few scaled down examples are shown below:
 
 ## Basic Solar System Simulation
 Simple simulation of planets, example output below. Needs work.
-![planetary motion example][nbody_orbits]
+![planetary motion example][nbody_orbits] ![animation][orbits_gif]
 
 
 
@@ -66,3 +66,5 @@ Simple simulation of planets, example output below. Needs work.
 [mb_spiral]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_spiral1.png "Mandelbrot Image: 'spiral'."
 
 [nbody_orbits]: https://github.com/rokkuran/miscellaneous/blob/master/nbody/output/orbits3.png "n-body example."
+
+[orbits_gif]: https://github.com/rokkuran/miscellaneous/blob/master/nbody/output/orbits.gif " "
