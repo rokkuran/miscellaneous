@@ -30,6 +30,8 @@ Few examples below.
 ![Mandelbrot Set - lightning][mb_lightning]
 ![Mandelbrot Set - spiral][mb_spiral]
 
+<img src="https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/mandelbrot_3000_3000_2000_spiral1.png" width="500" />
+
 ### Other
 - How to choose best toilet strategy simulation.
 
