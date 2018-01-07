@@ -44,17 +44,6 @@ Simple simulation of planets, example output below. Needs work.
 ![planetary motion example][nbody_orbits] ![animation][orbits_gif]
 
 
-
-## Anime Recommenders
-- Uses [Kitsu][kitsu] API to retrieve user/item data.
-- Data stored locally in mongodb.
-- Preliminary work on content based recommender.
-- Preliminary work on SVD based collaborative filtering recommender.
-
-
-
-[kitsu]: kitsu.io
-
 [dla]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/dla_1000_50000_-100_100.gif "Diffusion-limited aggregation."
 
 [sierpinski_gasket]: https://github.com/rokkuran/miscellaneous/blob/master/math_misc/output/sierpinski_gasket.gif "Sierpinski Gasket."
