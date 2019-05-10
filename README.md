@@ -2,14 +2,6 @@
 A place for smaller projects that have no other home.
 
 
-
-## Optimisation
-- N-dimensional Particle Swarm Optimisation (PSO).
-- N-dimensional Bees Algorithm (BA).
-- Preliminary work applying PSO to ML model parameter tuning.
-
-
-
 ## Miscellaneous Mathematics
 
 ### Diffusion-limited Aggregation
